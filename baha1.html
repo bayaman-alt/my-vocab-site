@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Словарь с сортировкой, произношением и тестами</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+  input, textarea { width: 100%; margin: 5px 0; padding: 8px; }
+  button { margin: 5px 5px 15px 0; padding: 8px 15px; cursor: pointer; }
+  .word-item { border-bottom: 1px solid #ddd; padding: 10px 0; }
+  .word-item span { display: block; }
+  #filterButtons button { margin-right: 10px; }
+  #testSection { background: #f0f0f0; padding: 15px; margin-top: 30px; border-radius: 8px; }
+  #testWord { font-size: 1.5em; font-weight: bold; }
+  #testResult { margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h1>Мой словарь корейского и английского</h1>
+
+<label>Слово:</label>
+<input type="text" id="wordInput" placeholder="Например, apple" />
+<label>Перевод:</label>
+<input type="text" id="translationInput" placeholder="Например, яблоко" />
+<label>Пример предложения:</label>
+<textarea id="exampleInput" placeholder="Например, I eat an apple"></textarea>
+
+<button id="addWordBtn">Добавить слово</button>
+<button id="exportBtn">Экспорт слов</button>
+<input type="file" id="importInput" style="display:none" accept=".json" />
+<button id="importBtn">Импорт слов</button>
+
+<h2>Фильтр слов:</h2>
+<div id="filterButtons">
+  <button data-filter="all" class="filterBtn">Все</button>
+  <button data-filter="new" class="filterBtn">Новые</button>
+  <button data-filter="learned" class="filterBtn">Выученные</button>
+</div>
+
+<h2>Слова в словаре:</h2>
+<div id="wordsList"></div>
+
+<hr>
+
+<h2>Тест: повтори слово</h2>
+<div id="testSection">
+  <div id="testWord">Нажми "Следующее" чтобы начать тест</div>
+  <button id="pronounceBtn" disabled>🔊 Произнести</button>
+  <button id="markLearnedBtn" disabled>Отметить как выученное</button>
+  <button id="nextTestBtn">Следующее слово</button>
+  <div id="testResult"></div>
+</div>
+
+<script>
+let wordData = JSON.parse(localStorage.getItem('myWords')) || {words: []};
+let currentFilter = 'all';
+let testIndex = null;
+
+// Функция рендера списка слов с фильтрацией
+function renderWords() {
+  const container = document.getElementById('wordsList');
+  container.innerHTML = '';
+  let filteredWords = wordData.words;
+  if(currentFilter !== 'all') {
+    filteredWords = wordData.words.filter(w => w.status === currentFilter);
+  }
+  if(filteredWords.length === 0) {
+    container.innerHTML = '<p>Слов нет для выбранного фильтра.</p>';
+    return;
+  }
+  filteredWords.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'word-item';
+    div.innerHTML = `
+      <strong>${item.word}</strong> — <em>${item.translation}</em> [${item.status}]
+      <span>Пример: ${item.example || 'нет'}</span>
+      <button onclick="toggleStatus(${wordData.words.indexOf(item)})">
+        ${item.status === 'new' ? 'Отметить выученным' : 'Отметить новым'}
+      </button>
+      <button onclick="pronounceWord('${item.word}')">🔊</button>
+      <button onclick="deleteWord(${wordData.words.indexOf(item)})">Удалить</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// Добавляем слово
+document.getElementById('addWordBtn').onclick = () => {
+  const word = document.getElementById('wordInput').value.trim();
+  const translation = document.getElementById('translationInput').value.trim();
+  const example = document.getElementById('exampleInput').value.trim();
+
+  if (!word || !translation) {
+    alert('Слово и перевод обязательны!');
+    return;
+  }
+
+  wordData.words.push({word, translation, example, status: 'new'});
+  localStorage.setItem('myWords', JSON.stringify(wordData));
+  clearInputs();
+  renderWords();
+};
+
+// Очистка инпутов
+function clearInputs() {
+  document.getElementById('wordInput').value = '';
+  document.getElementById('translationInput').value = '';
+  document.getElementById('exampleInput').value = '';
+}
+
+// Удаление слова
+function deleteWord(index) {
+  if(!confirm('Удалить слово?')) return;
+  wordData.words.splice(index, 1);
+  localStorage.setItem('myWords', JSON.stringify(wordData));
+  renderWords();
+}
+
+// Переключение статуса слова
+function toggleStatus(index) {
+  const word = wordData.words[index];
+  word.status = (word.status === 'new') ? 'learned' : 'new';
+  localStorage.setItem('myWords', JSON.stringify(wordData));
+  renderWords();
+}
+
+// Экспорт слов
+document.getElementById('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(wordData)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'myWords.json';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+// Импорт слов
+document.getElementById('importBtn').onclick = () => {
+  document.getElementById('importInput').click();
+};
+
+document.getElementById('importInput').onchange = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.words || !Array.isArray(imported.words)) {
+        alert('Неверный формат файла');
+        return;
+      }
+      wordData = imported;
+      localStorage.setItem('myWords', JSON.stringify(wordData));
+      renderWords();
+      alert('Импорт успешно выполнен!');
+    } catch (err) {
+      alert('Ошибка при чтении файла: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+};
+
+// Фильтры
+document.querySelectorAll('.filterBtn').forEach(btn => {
+  btn.onclick = () => {
+    currentFilter = btn.getAttribute('data-filter');
+    renderWords();
+  };
+});
+
+// Произношение слова через Web Speech API
+function pronounceWord(text) {
+  if (!('speechSynthesis' in window)) {
+    alert('Произношение не поддерживается в вашем браузере');
+    return;
+  }
+  const utterance = new SpeechSynthesisUtterance(text);
+  // Можно настроить голос и язык тут
+  utterance.lang = 'en-US'; // Можно менять на 'ko-KR' для корейского
+  speechSynthesis.speak(utterance);
+}
+
+// Тесты — показываем случайное слово из новых
+function nextTestWord() {
+  const newWords = wordData.words.filter(w => w.status === 'new');
+  const testWordDiv = document.getElementById('testWord');
+  const pronounceBtn = document.getElementById('pronounceBtn');
+  const markBtn = document.getElementById('markLearnedBtn');
+  const testResult = document.getElementById('testResult');
+
+  if (newWords.length === 0) {
+    testWordDiv.textContent = 'Нет новых слов для теста!';
+    pronounceBtn.disabled = true;
+    markBtn.disabled = true;
+    testResult.textContent = '';
+    testIndex = null;
+    return;
+  }
+  
+  testIndex = Math.floor(Math.random() * newWords.length);
+  const word = newWords[testIndex];
+
+  testWordDiv.textContent = word.word;
+  pronounceBtn.disabled = false;
+  markBtn.disabled = false;
+  testResult.textContent = '';
+}
+
+// Отметить слово как выученное из теста
+document.getElementById('markLearned
