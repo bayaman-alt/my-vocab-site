@@ -1,157 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Language Vocab</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f2f2f2;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .tabs {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-    .tabs button {
-      padding: 10px 20px;
-      margin: 0 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .tabs button.active {
-      background: #007acc;
-      color: white;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    ul li {
-      background: #eee;
-      margin-bottom: 10px;
-      padding: 10px;
-      border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .test-section {
-      margin-top: 20px;
-      padding-top: 10px;
-      border-top: 1px solid #ccc;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список дел</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>📘 Language Vocab Trainer</h1>
-  <div class="tabs">
-    <button onclick="switchLang('en')" class="active">English</button>
-    <button onclick="switchLang('kr')">한국어</button>
-  </div>
-  <div class="container">
-    <input type="text" id="word" placeholder="Word (단어)" />
-    <input type="text" id="translation" placeholder="Translation (번역)" />
-    <button onclick="addWord()">➕ Add Word</button>
-    <ul id="wordList"></ul>
-
-    <div class="test-section">
-      <h3>🧠 Test Yourself</h3>
-      <button onclick="startTest()">Start Test</button>
-      <div id="testArea"></div>
+    <div class="container">
+        <h1>Список дел</h1>
+        <input type="text" id="taskInput" placeholder="Введите новую задачу">
+        <button id="addTaskBtn">Добавить</button>
+        <ul id="taskList"></ul>
     </div>
-  </div>
-
-  <script>
-    let currentLang = 'en';
-    const storageKey = () => `vocab_${currentLang}`;
-
-    function switchLang(lang) {
-      currentLang = lang;
-      document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tabs button')[lang === 'en' ? 0 : 1].classList.add('active');
-      loadWords();
-    }
-
-    function getWords() {
-      return JSON.parse(localStorage.getItem(storageKey())) || [];
-    }
-
-    function saveWords(words) {
-      localStorage.setItem(storageKey(), JSON.stringify(words));
-    }
-
-    function addWord() {
-      const word = document.getElementById('word').value.trim();
-      const translation = document.getElementById('translation').value.trim();
-      if (!word || !translation) return alert("Fill both fields!");
-      const words = getWords();
-      words.push({ word, translation });
-      saveWords(words);
-      document.getElementById('word').value = '';
-      document.getElementById('translation').value = '';
-      loadWords();
-    }
-
-    function loadWords() {
-      const list = document.getElementById('wordList');
-      list.innerHTML = '';
-      getWords().forEach((item, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${item.word} - ${item.translation}</span> <button onclick="removeWord(${index})">❌</button>`;
-        list.appendChild(li);
-      });
-    }
-
-    function removeWord(index) {
-      const words = getWords();
-      words.splice(index, 1);
-      saveWords(words);
-      loadWords();
-    }
-
-    function startTest() {
-      const words = getWords();
-      if (words.length === 0) return alert("Add some words first!");
-      const random = words[Math.floor(Math.random() * words.length)];
-      const testDiv = document.getElementById('testArea');
-      testDiv.innerHTML = `
-        <p>Translate: <strong>${random.word}</strong></p>
-        <input type="text" id="answer" placeholder="Your answer...">
-        <button onclick="checkAnswer('${random.translation}')">Check</button>
-      `;
-    }
-
-    function checkAnswer(correct) {
-      const input = document.getElementById('answer').value.trim();
-      if (input.toLowerCase() === correct.toLowerCase()) {
-        alert("✅ Correct!");
-      } else {
-        alert("❌ Incorrect! Correct answer: " + correct);
-      }
-    }
-
-    loadWords();
-  </script>
+    <script src="script.js"></script>
 </body>
 </html>
+
+
+
