@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Учебник - Корейский</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🇰🇷 Учим корейский</h1>
+  <input type="text" id="word" placeholder="Слово">
+  <input type="text" id="translation" placeholder="Перевод">
+  <button onclick="addWord('korean')">Добавить</button>
+
+  <select id="filter" onchange="filterWords('korean')">
+    <option value="all">Все</option>
+    <option value="new">Новые</option>
+    <option value="learned">Выученные</option>
+  </select>
+
+  <div id="wordList"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
