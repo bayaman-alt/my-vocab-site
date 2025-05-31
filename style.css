@@ -1,0 +1,22 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  padding: 40px;
+  background: #f0f0f0;
+}
+.lang-buttons a {
+  display: inline-block;
+  padding: 15px 30px;
+  margin: 20px;
+  font-size: 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+input, button, select {
+  margin: 10px;
+  padding: 10px;
+  font-size: 16px;
+}
