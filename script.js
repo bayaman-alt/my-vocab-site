@@ -1,5 +1,6 @@
+
 function getStorageKey(language) {
-  return \`vocab_\${language}\`;
+  return `vocab_${language}`;
 }
 
 function loadWords(language) {
@@ -48,7 +49,8 @@ function displayWords(language) {
     if (filter === 'new' && entry.learned) return;
 
     const div = document.createElement('div');
-    div.innerHTML = \`<strong>\${entry.word}</strong> - \${entry.translation} <button onclick="toggleLearned('\${language}', \${index})">\${entry.learned ? '✅' : '❌'}</button>\`;
+    div.innerHTML = `<strong>${entry.word}</strong> - ${entry.translation} ` +
+      `<button onclick="toggleLearned('${language}', ${index})">${entry.learned ? '✅' : '❌'}</button>`;
     wordList.appendChild(div);
   });
 }
